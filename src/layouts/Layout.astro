@@ -1,0 +1,100 @@
+---
+interface Props {
+	title?: string;
+	description?: string;
+	lang?: string;
+}
+
+const {
+	title = 'Portfolio',
+	description = 'My Portfolio Site',
+	lang = 'ja'
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang={lang}>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<meta name="description" content={description} />
+		<title>{title}</title>
+	</head>
+	<body>
+		<slot />
+	</body>
+</html>
+
+<style is:global>
+	:root {
+		--color-bg: #000000;
+		--color-text: #ffffff;
+		--color-accent: #ffffff;
+		--color-border: #2a2a2a;
+		--color-hover: #e0e0e0;
+
+		--spacing-unit: 8px;
+		--max-width: 1200px;
+
+		--font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+		--font-heading: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+	}
+
+	* {
+		box-sizing: border-box;
+	}
+
+	html,
+	body {
+		margin: 0;
+		padding: 0;
+		width: 100%;
+		min-height: 100vh;
+		background-color: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+		line-height: 1.6;
+		scroll-behavior: smooth;
+	}
+
+	h1, h2, h3, h4, h5, h6 {
+		font-family: var(--font-heading);
+		line-height: 1.2;
+		margin-top: 0;
+		font-weight: 500;
+		letter-spacing: -0.02em;
+	}
+
+	a {
+		color: var(--color-text);
+		text-decoration: none;
+		transition: color 0.3s ease;
+	}
+
+	a:hover {
+		color: var(--color-hover);
+	}
+
+	img {
+		max-width: 100%;
+		height: auto;
+		display: block;
+	}
+
+	button {
+		cursor: pointer;
+		font-family: var(--font-body);
+	}
+
+	section {
+		padding: calc(var(--spacing-unit) * 12) calc(var(--spacing-unit) * 2);
+	}
+
+	@media (min-width: 768px) {
+		section {
+			padding: calc(var(--spacing-unit) * 16) calc(var(--spacing-unit) * 4);
+		}
+	}
+</style>

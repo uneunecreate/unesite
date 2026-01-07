@@ -1,0 +1,98 @@
+---
+interface Props {
+	lang?: string;
+}
+
+const { lang = 'ja' } = Astro.props;
+
+const content = {
+	ja: {
+		title: 'About',
+		text: 'ここに自己紹介文が入ります。写真の右側に文章を配置する2カラムレイアウトです。あなたの経歴、スキル、情熱について自由に記述できます。',
+		image: 'https://images.pexels.com/photos/1181269/pexels-photo-1181269.jpeg?auto=compress&cs=tinysrgb&w=800',
+		imageAlt: 'プロフィール画像'
+	},
+	en: {
+		title: 'About',
+		text: 'This is where your introduction goes. A two-column layout with text positioned to the right of the photo. Feel free to describe your background, skills, and passion.',
+		image: 'https://images.pexels.com/photos/1181269/pexels-photo-1181269.jpeg?auto=compress&cs=tinysrgb&w=800',
+		imageAlt: 'Profile image'
+	}
+};
+
+const data = lang === 'ja' ? content.ja : content.en;
+---
+
+<section id="about">
+	<div class="container">
+		<h2>{data.title}</h2>
+		<div class="about-content">
+			<div class="about-image">
+				<img src={data.image} alt={data.imageAlt} />
+			</div>
+			<div class="about-text">
+				<p>{data.text}</p>
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	.container {
+		max-width: var(--max-width);
+		margin: 0 auto;
+	}
+
+	h2 {
+		font-size: 48px;
+		margin-bottom: calc(var(--spacing-unit) * 10);
+		text-align: center;
+		letter-spacing: -0.03em;
+	}
+
+	.about-content {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: calc(var(--spacing-unit) * 8);
+		align-items: center;
+	}
+
+	.about-image {
+		overflow: hidden;
+		border-radius: 2px;
+	}
+
+	.about-image img {
+		width: 100%;
+		height: auto;
+		object-fit: cover;
+		display: block;
+		transition: transform 0.6s ease;
+	}
+
+	.about-image:hover img {
+		transform: scale(1.02);
+	}
+
+	.about-text {
+		font-size: 17px;
+		line-height: 1.9;
+		opacity: 0.95;
+	}
+
+	.about-text p {
+		margin: 0;
+	}
+
+	@media (min-width: 768px) {
+		.about-content {
+			grid-template-columns: 1fr 1fr;
+			gap: calc(var(--spacing-unit) * 10);
+		}
+
+		h2 {
+			font-size: 64px;
+			margin-bottom: calc(var(--spacing-unit) * 12);
+		}
+	}
+</style>

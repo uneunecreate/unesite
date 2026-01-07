@@ -1,0 +1,272 @@
+---
+import { getCollection } from 'astro:content';
+
+interface Props {
+	lang?: string;
+}
+
+const { lang = 'ja' } = Astro.props;
+
+const titleText = lang === 'ja' ? 'Gallery' : 'Gallery';
+
+const allGallery = await getCollection('gallery');
+const publishedGallery = allGallery
+	.filter(item => item.data.published)
+	.sort((a, b) => a.data.order - b.data.order);
+---
+
+<section id="gallery">
+	<div class="container">
+		<h2>{titleText}</h2>
+		<div class="gallery-grid">
+			{publishedGallery.map((item, index) => (
+				<div class="gallery-item" data-index={index}>
+					<img
+						src={item.data.image}
+						alt={lang === 'ja' ? item.data.title : item.data.titleEn}
+						loading="lazy"
+					/>
+					<div class="gallery-overlay">
+						<h3>{lang === 'ja' ? item.data.title : item.data.titleEn}</h3>
+					</div>
+				</div>
+			))}
+		</div>
+	</div>
+
+	<div id="lightbox" class="lightbox">
+		<button class="lightbox-close" aria-label="Close">&times;</button>
+		<button class="lightbox-prev" aria-label="Previous">&lsaquo;</button>
+		<button class="lightbox-next" aria-label="Next">&rsaquo;</button>
+		<div class="lightbox-content">
+			<img src="" alt="" id="lightbox-image" />
+			<div class="lightbox-info">
+				<h3 id="lightbox-title"></h3>
+				<p id="lightbox-description"></p>
+			</div>
+		</div>
+	</div>
+</section>
+
+<script define:vars={{ publishedGallery, lang }}>
+	const galleryItems = document.querySelectorAll('.gallery-item');
+	const lightbox = document.getElementById('lightbox');
+	const lightboxImage = document.getElementById('lightbox-image');
+	const lightboxTitle = document.getElementById('lightbox-title');
+	const lightboxDescription = document.getElementById('lightbox-description');
+	const closeBtn = document.querySelector('.lightbox-close');
+	const prevBtn = document.querySelector('.lightbox-prev');
+	const nextBtn = document.querySelector('.lightbox-next');
+
+	let currentIndex = 0;
+
+	function openLightbox(index) {
+		const item = publishedGallery[index];
+		if (!item) return;
+
+		currentIndex = index;
+		lightboxImage.src = item.data.image;
+		lightboxImage.alt = lang === 'ja' ? item.data.title : item.data.titleEn;
+		lightboxTitle.textContent = lang === 'ja' ? item.data.title : item.data.titleEn;
+		lightboxDescription.textContent = lang === 'ja' ? item.data.description : item.data.descriptionEn;
+		lightbox.classList.add('active');
+		document.body.style.overflow = 'hidden';
+	}
+
+	function closeLightbox() {
+		lightbox.classList.remove('active');
+		document.body.style.overflow = '';
+	}
+
+	function showNext() {
+		currentIndex = (currentIndex + 1) % publishedGallery.length;
+		openLightbox(currentIndex);
+	}
+
+	function showPrev() {
+		currentIndex = (currentIndex - 1 + publishedGallery.length) % publishedGallery.length;
+		openLightbox(currentIndex);
+	}
+
+	galleryItems.forEach((item) => {
+		item.addEventListener('click', () => {
+			const index = parseInt(item.dataset.index);
+			openLightbox(index);
+		});
+	});
+
+	closeBtn.addEventListener('click', closeLightbox);
+	prevBtn.addEventListener('click', showPrev);
+	nextBtn.addEventListener('click', showNext);
+
+	lightbox.addEventListener('click', (e) => {
+		if (e.target === lightbox) {
+			closeLightbox();
+		}
+	});
+
+	document.addEventListener('keydown', (e) => {
+		if (!lightbox.classList.contains('active')) return;
+
+		if (e.key === 'Escape') closeLightbox();
+		if (e.key === 'ArrowRight') showNext();
+		if (e.key === 'ArrowLeft') showPrev();
+	});
+</script>
+
+<style>
+	.container {
+		max-width: var(--max-width);
+		margin: 0 auto;
+	}
+
+	h2 {
+		font-size: 48px;
+		margin-bottom: calc(var(--spacing-unit) * 10);
+		text-align: center;
+		letter-spacing: -0.03em;
+	}
+
+	.gallery-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+		gap: calc(var(--spacing-unit) * 4);
+	}
+
+	.gallery-item {
+		position: relative;
+		aspect-ratio: 1;
+		overflow: hidden;
+		cursor: pointer;
+		border-radius: 2px;
+		background: var(--color-border);
+	}
+
+	.gallery-item img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: transform 0.4s ease;
+		display: block;
+	}
+
+	.gallery-item:hover img {
+		transform: scale(1.04);
+	}
+
+	.gallery-overlay {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+		padding: calc(var(--spacing-unit) * 3);
+		opacity: 0;
+		transition: opacity 0.3s ease;
+	}
+
+	.gallery-item:hover .gallery-overlay {
+		opacity: 1;
+	}
+
+	.gallery-overlay h3 {
+		margin: 0;
+		font-size: 18px;
+		font-weight: 500;
+	}
+
+	.lightbox {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: rgba(0, 0, 0, 0.95);
+		z-index: 2000;
+		display: none;
+		align-items: center;
+		justify-content: center;
+		padding: calc(var(--spacing-unit) * 4);
+	}
+
+	.lightbox.active {
+		display: flex;
+	}
+
+	.lightbox-content {
+		max-width: 1200px;
+		max-height: 90vh;
+		display: flex;
+		flex-direction: column;
+		gap: calc(var(--spacing-unit) * 3);
+	}
+
+	.lightbox-content img {
+		max-width: 100%;
+		max-height: 70vh;
+		object-fit: contain;
+		margin: 0 auto;
+	}
+
+	.lightbox-info {
+		text-align: center;
+	}
+
+	.lightbox-info h3 {
+		font-size: 24px;
+		margin-bottom: calc(var(--spacing-unit) * 2);
+	}
+
+	.lightbox-info p {
+		font-size: 16px;
+		opacity: 0.8;
+		margin: 0;
+	}
+
+	.lightbox-close,
+	.lightbox-prev,
+	.lightbox-next {
+		position: absolute;
+		background: none;
+		border: none;
+		color: var(--color-text);
+		font-size: 48px;
+		cursor: pointer;
+		padding: calc(var(--spacing-unit) * 2);
+		transition: opacity 0.3s ease;
+		z-index: 2001;
+	}
+
+	.lightbox-close {
+		top: calc(var(--spacing-unit) * 2);
+		right: calc(var(--spacing-unit) * 2);
+	}
+
+	.lightbox-prev {
+		left: calc(var(--spacing-unit) * 2);
+		top: 50%;
+		transform: translateY(-50%);
+	}
+
+	.lightbox-next {
+		right: calc(var(--spacing-unit) * 2);
+		top: 50%;
+		transform: translateY(-50%);
+	}
+
+	.lightbox-close:hover,
+	.lightbox-prev:hover,
+	.lightbox-next:hover {
+		opacity: 0.6;
+	}
+
+	@media (min-width: 768px) {
+		h2 {
+			font-size: 64px;
+		}
+
+		.gallery-grid {
+			grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+		}
+	}
+</style>
